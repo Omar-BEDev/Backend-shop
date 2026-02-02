@@ -22,6 +22,7 @@ export interface IProduct {
   category: string;
   isActive: boolean;
   createdAt: Date;
+  sku: string;
 }
 
 export interface IUser {

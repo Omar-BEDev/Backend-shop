@@ -13,6 +13,7 @@ const productSchema = new Schema<IProductModel>({
   category: { type: String, required: true },
   isActive: { type: Boolean, default: true },
   createdAt: { type: Date, default: Date.now },
+  sku: { type: String, required: true },
 });
 
 const Product = mongoose.model('Product', productSchema);
