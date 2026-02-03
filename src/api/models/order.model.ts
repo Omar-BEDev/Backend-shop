@@ -1,9 +1,9 @@
 
-import mongoose, { Schema } from 'mongoose';
+import mongoose, { Schema, Types } from 'mongoose';
 import { IOrder } from '../../interfaces';
 
 const orderSchema = new Schema<IOrder>({
-  userId: { type: String, required: true },
+  userId: { type: Types.ObjectId, required: true },
   items: [
     {
       productId: { type: String, required: true },

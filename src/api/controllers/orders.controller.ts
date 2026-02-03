@@ -11,7 +11,7 @@ import { catchAsync } from '../utils/catchAsync';
 
 export const addOrder = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
   const orderData = makeOrderData(req.body);
-  const message = await createOrder(orderData);
+  const message = await createOrder(await orderData);
   res.status(201).json(message);
 });
 
