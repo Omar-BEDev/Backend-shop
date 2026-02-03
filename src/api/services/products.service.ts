@@ -1,11 +1,12 @@
 import { IProduct } from '../../interfaces';
-import Product from '../../models/products.model';
+import Product from '../models/products.model';
+import * as crypto from 'crypto';
 
 export const generateSku = (name: string, category: string): string => {
   const categoryAbbr = category.substring(0, 3).toUpperCase();
   const nameAbbr = name.substring(0, 3).toUpperCase();
-  const randomNumber = Math.floor(100 + Math.random() * 900);
-  return `${categoryAbbr}-${nameAbbr}-${randomNumber}`;
+  const randomString = crypto.randomBytes(3).toString('hex').toUpperCase();
+  return `${categoryAbbr}-${nameAbbr}-${randomString}`;
 };
 
 export const makeProductData = (body: {

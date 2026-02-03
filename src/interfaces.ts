@@ -38,4 +38,6 @@ export interface IUser {
   };
   role: string;
   createdAt: Date;
+  isBanned: boolean;
+  status: string;
 }

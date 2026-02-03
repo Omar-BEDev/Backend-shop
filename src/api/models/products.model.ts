@@ -1,5 +1,5 @@
 import mongoose, { Document, Schema } from 'mongoose';
-import { IProduct } from '../interfaces';
+import { IProduct } from '../../interfaces';
 
 export interface IProductModel extends IProduct, Document {}
 

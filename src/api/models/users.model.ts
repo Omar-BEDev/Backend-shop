@@ -1,5 +1,5 @@
 import mongoose, { Document, Schema } from 'mongoose';
-import { IUser } from '../interfaces';
+import { IUser } from '../../interfaces';
 
 export interface IUserModel extends IUser, Document {}
 
@@ -16,6 +16,8 @@ const userSchema = new Schema<IUserModel>({
   },
   role: { type: String, default: 'user' },
   createdAt: { type: Date, default: Date.now },
+  isBanned: {type: Boolean, default: false},
+  status: {type: String, default: 'active'}
 });
 
 const User = mongoose.model('User', userSchema);

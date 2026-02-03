@@ -1,9 +1,8 @@
-import mongoose, { Document, Schema } from 'mongoose';
-import { IOrder } from '../interfaces';
 
-export interface IOrderModel extends IOrder, Document {}
+import mongoose, { Schema } from 'mongoose';
+import { IOrder } from '../../interfaces';
 
-const orderSchema = new Schema<IOrderModel>({
+const orderSchema = new Schema<IOrder>({
   userId: { type: String, required: true },
   items: [
     {
@@ -19,6 +18,4 @@ const orderSchema = new Schema<IOrderModel>({
   createdAt: { type: Date, default: Date.now },
 });
 
-const Order = mongoose.model('Order', orderSchema);
-
-export default Order;
+export const Order = mongoose.model<IOrder>('Order', orderSchema);
