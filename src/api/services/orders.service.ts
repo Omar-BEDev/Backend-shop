@@ -1,9 +1,9 @@
 import { Types } from 'mongoose';
-import { IOrder } from '../../interfaces';
+import { IOrder, IProduct, IProductInfo, ITem } from '../../interfaces';
 import { Order } from '../models/order.model';
 import Product from '../models/products.model';
 import { ApiError } from '../utils/ApiError';
-import { ObjectId } from 'mongodb';
+import { ObjectId} from 'mongodb';
 
 export const makeOrderData = async(body: {
   userId : string,
@@ -17,24 +17,28 @@ export const makeOrderData = async(body: {
 }): Promise<IOrder> => {
   
   const { userId, items, discountValue } = body;
-  let products = [];
+  const productIds = items.map(v => v.productId);
+  let products = await Product.find({_id : {$in : productIds}})
+  .select("price")
+  .lean();
+  if (products.length !== items.length) throw new ApiError("orders total is invalid",400)
   
-  let i = 0;
-  while (i < items.length) {
-  items[i].price = 0
-  if (!Types.ObjectId.isValid(items[i].productId)) throw new ApiError("invalid item info",404)
-   let product = await Product.findOne({_id : items[i].productId});
-   if (!product) throw new ApiError("we didn't found product",404)
-   products.push(product)
-  i++
-}
-  while (i < products.length) {
-    items[i].price = products[i].price
-    i++
+  const itemsMap = new Map<string, ITem>(
+  items.map(item => [item.productId,item])
+  )
+  let results : ITem[] = []; 
+  for (let product of products){
+   const result = itemsMap.get(product._id.toString())
+   if (result){
+    result.price = product.price
+    results.push(result)
+   }
+   
   }
-  const totalPrice = items.reduce(
-    (acc: number, item: { price: number; quantity: number }) =>
-      acc + item.price * item.quantity,
+ 
+  const totalPrice = results.reduce(
+    (acc: number, result: { price: number; quantity: number }) =>
+      acc + result.price * result.quantity,
     0
   );
   if (!Types.ObjectId.isValid(userId)) throw new ApiError("invalid user id",400)

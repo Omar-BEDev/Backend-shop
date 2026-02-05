@@ -43,3 +43,14 @@ export interface IUser {
   isBanned: boolean;
   status: string;
 }
+export interface IProductInfo {
+    _id : Types.ObjectId,
+    price : number
+}
+export interface ITem{
+    productId: string;
+    name: string;
+    price: number;
+    quantity: number;
+  
+}
