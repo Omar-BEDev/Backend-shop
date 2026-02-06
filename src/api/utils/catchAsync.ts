@@ -7,3 +7,13 @@ export const catchAsync = (
     fn(req, res, next).catch(next);
   };
 };
+
+
+export const catchAsyncStartup = (fn: () => Promise<any>) => {
+  return () => {
+      fn().catch((error) => {
+          console.error('Failed to start the server:', error);
+          process.exit(1);
+      });
+  }
+}

@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import { z } from 'zod';
 import mongoose from 'mongoose';
 import { ApiError } from '../utils/ApiError';
+import { AuthRequest } from '../../interfaces';
 
 // Zod schema for user validation
 const userSchema = z.object({
@@ -34,3 +35,17 @@ export const validateUserMongoId = (req: Request, res: Response, next: NextFunct
 
   next();
 };
+export const isSuperAdmin = (req : AuthRequest,res : Response,next: NextFunction) => {
+  if (!req.user) throw new ApiError("we didn't found user pyload",404) 
+  const {role} = req.user
+  if (role !== "Super Admin") throw new ApiError("permissions denied",403)
+  next()
+
+}
+
+export const isHaveAccess = (req : AuthRequest,res : Response,next: NextFunction) => {
+  if (!req.user) throw new ApiError("we didn't found user pyload",404) 
+    const {role} = req.user
+    if (role !== "super admin" && role !== "admin") throw new ApiError("permissions denied",403)
+    next()
+}

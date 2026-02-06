@@ -24,8 +24,9 @@ export const login = catchAsync(async (req: AuthRequest, res: Response) => {
 });
 
 export const signup = catchAsync(async (req: AuthRequest, res: Response) => {
-  const userData = makeUserData(req.body);
-  const newUser = await createUser(await userData);
+  req.body.role = "user"
+  const userData = await makeUserData(req.body);
+  const newUser = await createUser(userData);
   const token = createJwtToken(newUser._id, newUser.role);
   res.status(200).json({
     message: 'the create account is succesfully',
@@ -45,6 +46,7 @@ export const changeRole = catchAsync(async (req: AuthRequest, res: Response) => 
   if (!req.user) throw new ApiError("we didn't found user payload",400)
   const { id } = req.user;
   const { role } = req.body;
+  if (role !== "Super admin") throw new ApiError("permissions denied", 403)
   await changeRoleService(id.toString(), role);
   res.status(200).json({ message: 'the role is changed' });
 });

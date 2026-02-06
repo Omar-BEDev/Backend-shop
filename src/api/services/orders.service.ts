@@ -3,7 +3,7 @@ import { IOrder,  IProductInfo, ITem } from '../../interfaces';
 import { Order } from '../models/order.model';
 import Product from '../models/products.model';
 import { ApiError } from '../utils/ApiError';
-import { ObjectId} from 'mongodb';
+import { ObjectId, OrderedBulkOperation} from 'mongodb';
 import { catchAsync } from '../utils/catchAsync';
 
 const fetchAndValidateProducts = async (productIds: string[]): Promise<IProductInfo[]> => {
@@ -78,23 +78,30 @@ export const createOrder = async (orderData: IOrder) => {
   return { message: 'Order successfully added' };
 };
 
-export const cancelOrder = async (orderId: string) => {
+export const cancelOrder = async (orderId: string, id : string) => {
   const order = await Order.findById(orderId);
   if (!order) {
     throw new ApiError('Order not found', 404);
+  }
+  if (Types.ObjectId.isValid(id)) throw new ApiError("invalid user id",400)
+    const userId = new ObjectId(id)
+  if (order.userId !== userId){
+    throw new ApiError("permissions denied",403)
   }
   order.status = 'cancelled';
   await order.save();
   return { message: 'Order successfully cancelled' };
 };
 
-export const pendingOrder = async (orderId: string, productId: string, quantity: number) => {
+export const pendingOrder = async (orderId: string, productId: string, quantity: number,id : string) => {
   const order = await Order.findById(orderId);
-
+  
   if (!order) {
     throw new ApiError('Order not found', 404);
   }
-
+  if (Types.ObjectId.isValid(id)) throw new ApiError("invalid user id",400)
+  const userId = new ObjectId(id)
+  if (order.userId !== userId) throw new ApiError("permissions denied",403)
   if (order.status !== 'pending') {
     throw new ApiError('Order is not in pending state', 400);
   }
@@ -120,7 +127,14 @@ export const pendingOrder = async (orderId: string, productId: string, quantity:
   return order;
 };
 
-export const getOrders = async () => {
-  const orders = await Order.find();
+export const getOrders = async (userId : string) => {
+  if (Types.ObjectId.isValid(userId)) throw new ApiError("invalid user id",400)
+  
+  const orders = await Order.find({userId : userId});
   return orders;
 };
+export const getAllOrders = async () => {
+  const orders = await Order.find()
+  const numOfOrders = orders.length
+  const numOfOrdersCompleted = orders.filter(order => order.status === "completed" )
+}

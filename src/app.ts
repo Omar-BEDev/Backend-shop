@@ -17,3 +17,5 @@ app.use("/api/products", productRouter)
 app.use("/api/users",userRouter)
 
 app.use(handleErrors)
+
+export default app
