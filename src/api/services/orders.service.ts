@@ -135,8 +135,8 @@ export const getOrders = async (userId : string) => {
 };
 export const getAllOrders = async () => {
   const orders = await Order.find()
-  .sort{createdAt : -1},
-  .limit(50),
+  .sort({createdAt : -1})
+  .limit(50)
   .lean()
   
   const numOfOrders = await Order.countDocuments()

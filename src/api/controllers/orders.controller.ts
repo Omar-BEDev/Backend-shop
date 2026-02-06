@@ -51,4 +51,11 @@ export const updateOrder = catchAsync(async (req: AuthRequest, res: Response, ne
   res.status(200).json(order);
 });
 
-export const getAdminAllOrders = catchAsync(async (req,res,next))
+export const getAdminAllOrders = catchAsync(async (req: Request,res : Response,next : NextFunction) => {
+  const ordersInfo = await getAllOrders()
+  res.status(200).json({
+    orders : ordersInfo.orders,
+    numOfOrders : ordersInfo.numOforders,
+    completedOrders : ordersInfo.numOfOrdersCompleted
+  })
+})
