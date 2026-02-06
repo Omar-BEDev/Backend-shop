@@ -50,6 +50,7 @@ export const deleteProduct = async (productId: string): Promise<{ message: strin
 
 export const getAllProduct = async() : Promise<IProduct[]>=>{
   const products = await Product.find()
+  .limit(20)
   if(!products) throw new ApiError("we didn't found any products",404)
   return products
 }
@@ -59,7 +60,7 @@ export const updateProduct = async (body : {
   price : number,
   description : string,
   isActive : boolean,
-  images : string,
+  images : string[],
   stock : number
 }, productId : string
 ) => {

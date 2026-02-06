@@ -26,17 +26,17 @@ const queryParamsSchema = z.object({
 });
 
 
-export const validateReqBody = (req: Request, res: Response, next: NextFunction) => {
+export const validateOrderReqBody = (req: Request, res: Response, next: NextFunction) => {
   const result = orderSchema.safeParse(req.body);
 
   if (!result.success) {
-    throw new ApiError("'Invalid MongoDB ID'",400)
+    throw new ApiError(result.error.message,400)
   }
 
   next();
 };
 
-export const validateMongoId = (req: Request, res: Response, next: NextFunction) => {
+export const validateOrderMongoId = (req: Request, res: Response, next: NextFunction) => {
   const { id } = req.params;
   if (typeof id !== "string") {
     throw new ApiError("invalid product id params",400)
@@ -48,7 +48,7 @@ export const validateMongoId = (req: Request, res: Response, next: NextFunction)
   next();
 };
 
-export const validateQueryParams = (req: Request, res: Response, next: NextFunction) => {
+export const validateOrderQueryParams = (req: Request, res: Response, next: NextFunction) => {
     const result = queryParamsSchema.safeParse(req.query);
   
     if (!result.success) {
