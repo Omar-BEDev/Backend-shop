@@ -1,17 +1,18 @@
 {
   "openapi": "3.0.0",
   "info": {
-    "title": "Backend Shop API",
-    "description": "A professional E-commerce REST API built with Express, TypeScript, and MongoDB.",
-    "version": "1.0.0",
-    "contact": {
-      "name": "API Support"
-    }
+    "title": "Eco Storefront API",
+    "description": "Professional E-commerce REST API built with Express, TypeScript, and MongoDB. Features: Secure Auth, Batch Product Processing, and Admin Analytics.",
+    "version": "1.0.0"
   },
   "servers": [
     {
+      "url": "https://backend-shop-practise-production.up.railway.app",
+      "description": "Main Production Server"
+    },
+    {
       "url": "http://localhost:3000",
-      "description": "Development server"
+      "description": "Local Development Server"
     }
   ],
   "components": {
@@ -23,21 +24,30 @@
       }
     },
     "schemas": {
-      "User": {
+      "UserSignupInput": {
         "type": "object",
+        "required": ["name", "nickname", "email", "password", "birthDate", "address"],
         "properties": {
-          "name": { "type": "string" },
-          "nickname": { "type": "string" },
-          "email": { "type": "string", "format": "email" },
-          "password": { "type": "string", "minLength": 8 },
+          "name": { "type": "string", "example": "Ibrahim El" },
+          "nickname": { "type": "string", "example": "ibra99" },
+          "email": { "type": "string", "format": "email", "example": "ibra@test.com" },
+          "password": { "type": "string", "minLength": 8, "example": "Password123!" },
           "birthDate": { "type": "string", "format": "date", "example": "1995-01-01" },
           "address": {
             "type": "object",
             "properties": {
-              "country": { "type": "string" },
-              "city": { "type": "string" }
+              "country": { "type": "string", "example": "Morocco" },
+              "city": { "type": "string", "example": "Agadir" }
             }
           }
+        }
+      },
+      "AuthResponse": {
+        "type": "object",
+        "properties": {
+          "message": { "type": "string", "example": "the login is succesfully" },
+          "user": { "type": "string", "example": "Ibrahim" },
+          "token": { "type": "string", "example": "eyJhbGci..." }
         }
       },
       "Product": {
@@ -48,15 +58,14 @@
           "description": { "type": "string" },
           "price": { "type": "number" },
           "stock": { "type": "number" },
-          "images": { "type": "array", "items": { "type": "string" } },
           "category": { "type": "string" },
-          "isActive": { "type": "boolean" },
+          "images": { "type": "array", "items": { "type": "string" } },
           "sku": { "type": "string", "readOnly": true }
         }
       },
-      "Order": {
+      "OrderInput": {
         "type": "object",
-        "required": ["userId", "items", "totalPrice"],
+        "required": ["userId", "items"],
         "properties": {
           "userId": { "type": "string", "description": "MongoDB ObjectId" },
           "items": {
@@ -65,54 +74,35 @@
               "type": "object",
               "properties": {
                 "productId": { "type": "string" },
-                "name": { "type": "string" },
                 "quantity": { "type": "number" },
-                "price": { "type": "number" }
+                "name": { "type": "string", "description": "Placeholder, server will overwrite" },
+                "price": { "type": "number", "description": "Placeholder, server will overwrite" }
               }
             }
           },
-          "totalPrice": { "type": "number" },
-          "discountValue": { "type": "number" },
-          "status": { "type": "string", "enum": ["pending", "completed", "cancelled"] }
-        }
-      },
-      "Error": {
-        "type": "object",
-        "properties": {
-          "success": { "type": "boolean", "example": false },
-          "message": { "type": "string" }
+          "discountValue": { "type": "number", "default": 0 }
         }
       }
     }
   },
-  "tags": [
-    { "name": "Users", "description": "Authentication and User Management" },
-    { "name": "Products", "description": "Product Inventory Management" },
-    { "name": "Orders", "description": "Customer Orders and Statistics" }
-  ],
   "paths": {
     "/api/users/signup": {
       "post": {
-        "tags": ["Users"],
-        "summary": "Register a new user",
+        "tags": ["Authentication"],
+        "summary": "Create a new user account",
         "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": { "schema": { "$ref": "#/components/schemas/User" } }
-          }
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/UserSignupInput" } } }
         },
         "responses": {
-          "200": { "description": "User created successfully" },
-          "400": { "description": "Validation error" }
+          "200": { "description": "Account created", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/AuthResponse" } } } }
         }
       }
     },
     "/api/users/login": {
       "post": {
-        "tags": ["Users"],
-        "summary": "Login user",
+        "tags": ["Authentication"],
+        "summary": "Login to existing account",
         "requestBody": {
-          "required": true,
           "content": {
             "application/json": {
               "schema": {
@@ -126,163 +116,60 @@
           }
         },
         "responses": {
-          "200": { "description": "Login successful" },
-          "404": { "description": "User not found" }
-        }
-      }
-    },
-    "/api/users/banned": {
-      "put": {
-        "tags": ["Users"],
-        "summary": "Ban a user (Admin only)",
-        "security": [{ "bearerAuth": [] }],
-        "responses": {
-          "200": { "description": "User banned" },
-          "403": { "description": "Forbidden" }
+          "200": { "description": "Login successful", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/AuthResponse" } } } }
         }
       }
     },
     "/api/products": {
       "get": {
         "tags": ["Products"],
-        "summary": "Get all products",
-        "parameters": [
-          { "name": "category", "in": "query", "schema": { "type": "string" } },
-          { "name": "price", "in": "query", "schema": { "type": "string" } }
-        ],
+        "summary": "Get all active products",
         "responses": {
-          "200": { "description": "List of products" }
+          "200": { "description": "Success", "content": { "application/json": { "schema": { "type": "object", "properties": { "products": { "type": "array", "items": { "$ref": "#/components/schemas/Product" } } } } } } }
         }
       }
     },
     "/api/products/add": {
       "post": {
-        "tags": ["Products"],
-        "summary": "Add a new product (Admin only)",
+        "tags": ["Admin - Products"],
         "security": [{ "bearerAuth": [] }],
+        "summary": "Add new product",
         "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": { "schema": { "$ref": "#/components/schemas/Product" } }
-          }
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Product" } } }
         },
         "responses": {
-          "201": { "description": "Product created" }
-        }
-      }
-    },
-    "/api/products/update/{id}": {
-      "put": {
-        "tags": ["Products"],
-        "summary": "Update product (Admin only)",
-        "security": [{ "bearerAuth": [] }],
-        "parameters": [
-          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": { "schema": { "$ref": "#/components/schemas/Product" } }
-          }
-        },
-        "responses": {
-          "200": { "description": "Product updated" }
-        }
-      }
-    },
-    "/api/products/delete/{id}": {
-      "delete": {
-        "tags": ["Products"],
-        "summary": "Delete product (Admin only)",
-        "security": [{ "bearerAuth": [] }],
-        "parameters": [
-          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
-        ],
-        "responses": {
-          "200": { "description": "Product deleted" }
-        }
-      }
-    },
-    "/api/orders": {
-      "get": {
-        "tags": ["Orders"],
-        "summary": "Get logged in user orders",
-        "security": [{ "bearerAuth": [] }],
-        "responses": {
-          "200": { "description": "List of user orders" }
+          "201": { "description": "Created" }
         }
       }
     },
     "/api/orders/add": {
       "post": {
         "tags": ["Orders"],
+        "security": [{ "bearerAuth": [] }],
         "summary": "Create a new order",
-        "security": [{ "bearerAuth": [] }],
         "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": { "schema": { "$ref": "#/components/schemas/Order" } }
-          }
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/OrderInput" } } }
         },
         "responses": {
-          "201": { "description": "Order created" }
-        }
-      }
-    },
-    "/api/orders/update/{id}/{productId}": {
-      "put": {
-        "tags": ["Orders"],
-        "summary": "Update item quantity in a pending order",
-        "security": [{ "bearerAuth": [] }],
-        "parameters": [
-          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" }, "description": "Order ID" },
-          { "name": "productId", "in": "path", "required": true, "schema": { "type": "string" } }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "quantity": { "type": "number" }
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": { "description": "Order updated" }
-        }
-      }
-    },
-    "/api/orders/cancel/{id}": {
-      "put": {
-        "tags": ["Orders"],
-        "summary": "Cancel an order",
-        "security": [{ "bearerAuth": [] }],
-        "parameters": [
-          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
-        ],
-        "responses": {
-          "200": { "description": "Order cancelled" }
+          "201": { "description": "Order successful", "content": { "application/json": { "schema": { "type": "object", "properties": { "message": { "type": "string" } } } } } }
         }
       }
     },
     "/api/orders/statistics": {
       "get": {
-        "tags": ["Orders"],
-        "summary": "Get order statistics (Admin only)",
+        "tags": ["Admin - Statistics"],
         "security": [{ "bearerAuth": [] }],
+        "summary": "Get store statistics for admin dashboard",
         "responses": {
           "200": {
-            "description": "Dashboard data",
+            "description": "Stats Data",
             "content": {
               "application/json": {
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "orders": { "type": "array", "items": { "$ref": "#/components/schemas/Order" } },
-                    "numOfOrders": { "type": "number" },
+                    "orders": { "type": "array", "items": { "type": "object" } },
+                    "numOforders": { "type": "number" },
                     "completedOrders": { "type": "number" }
                   }
                 }
