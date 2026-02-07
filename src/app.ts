@@ -24,7 +24,7 @@ app.use(cors({
 app.use("/api/orders", orderRouter)
 app.use("/api/products", productRouter)
 app.use("/api/users",userRouter)
-app.use("/docs",authToken,isSuperAdmin,swaggerui.serve,swaggerui.setup(swaggerDocument))
+app.use("/docs",swaggerui.serve,swaggerui.setup(swaggerDocument))
 app.use(handleErrors)
 
 export default app
